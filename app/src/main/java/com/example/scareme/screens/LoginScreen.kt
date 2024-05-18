@@ -1,6 +1,7 @@
 package com.example.scareme.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,20 +21,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.scareme.navigation.AppScreens
 import com.example.scareme.ui.theme.balooFontFamily
 import com.example.scareme.ui.theme.jollyFontFamily
 
 @Composable
-fun LoginScreen(){
-    MainScreen()
+fun LoginScreen(navController: NavController){
+    MainScreen(navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(){
+fun MainScreen(navController: NavController){
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +77,7 @@ fun MainScreen(){
                     defaultElevation = 8.dp //has to be offset also
                 ),
                 onClick = {
-                    //Go to Sign Up screen
+                    navController.navigate(route = AppScreens.SignUp.route)
                 },
             ){
                 Box (
@@ -112,13 +114,10 @@ fun MainScreen(){
                 modifier = Modifier
                     .padding(bottom = 5.dp)
                     .background(Color(0xFF180c14))
+                    .clickable {
+                        navController.navigate(route = AppScreens.SignIn.route)
+                    }
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ShowPreview(){
-    LoginScreen()
 }
