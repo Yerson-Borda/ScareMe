@@ -51,7 +51,32 @@ android {
 
 dependencies {
 
+    //Navigation
     implementation (libs.androidx.navigation.compose)
+
+    //Retrofit
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
+    //Http3 interceptor
+    implementation(libs.logging.interceptor)
+
+    //Dagger - Hilt
+    implementation (libs.hilt.android)
+    implementation (libs.androidx.hilt.lifecycle.viewmodel)
+    implementation (libs.androidx.hilt.navigation.compose)
+
+
+    implementation (libs.androidx.material.icons.extended)
+
+    //Cards
+    implementation ("com.alexstyl.swipeablecard:swipeablecard:0.1.0")
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.26.1-alpha")
+
+    //Coil - images
+    implementation ("io.coil-kt:coil-compose:2.0.0")
+    implementation ("io.coil-kt:coil:2.0.0")
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
