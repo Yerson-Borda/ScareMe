@@ -7,7 +7,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.scareme.presentation.sign_in.SignInScreen
-import com.example.scareme.presentation.sign_up.Wea
 import com.example.scareme.presentation.home.HomeScreen
 import com.example.scareme.presentation.launch.SplashScreen
 import com.example.scareme.presentation.cards.Main
@@ -30,9 +29,6 @@ fun AppNavigation(){
         }
         composable(AppScreens.SignIn.route){
             SignInScreen(navController)
-        }
-        composable(AppScreens.Wea.route){
-            Wea(navController)
         }
         composable(AppScreens.SignUp.route){
             SignUpScreen(navController)
