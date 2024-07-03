@@ -8,14 +8,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.scareme.presentation.sign_in.SignInScreen
 import com.example.scareme.presentation.home.HomeScreen
-import com.example.scareme.presentation.launch.SplashScreen
-import com.example.scareme.presentation.cards.Main
+import com.example.scareme.presentation.launch_screen.SplashScreen
+import com.example.scareme.presentation.main_screen.Main
 import com.example.scareme.presentation.chat.ChatScreen
 import com.example.scareme.presentation.messenger.MessengerScreen
 import com.example.scareme.presentation.my_profile.MyProfileScreen
 import com.example.scareme.presentation.user_details.ProfileScreen
 import com.example.scareme.presentation.sign_up.SignUpScreen
-import com.example.scareme.presentation.register.UserInfo
+import com.example.scareme.presentation.fill_profile.UserInfo
 
 @Composable
 fun AppNavigation(){

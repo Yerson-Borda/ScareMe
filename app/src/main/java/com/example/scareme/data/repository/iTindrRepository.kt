@@ -2,7 +2,6 @@ package com.example.scareme.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.example.scareme.common.NetworkConstant.BASE_URL
 import com.example.scareme.common.SaveTokenUtil
 import com.example.scareme.data.Network.Auth.AuthApi
 import com.example.scareme.data.Network.CardOptions.CardOptionsApi
@@ -12,38 +11,19 @@ import com.example.scareme.domain.Entities.RequestBodies.GetChatRequest
 import com.example.scareme.domain.Entities.RequestBodies.LoginRequest
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
 import com.example.scareme.domain.Entities.RequestBodies.RegistrationRequest
-import com.example.scareme.domain.Entities.RequestBodies.SendMessageRequest
 import com.example.scareme.domain.Entities.RequestBodies.TopicsRequest
 import com.example.scareme.domain.Entities.RequestBodies.UpdateProfRequest
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
 import okhttp3.RequestBody
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.ByteArrayOutputStream
 
 class iTindrRepository(private val context: Context) {
-
-    val interceptor = HttpLoggingInterceptor()
-    val client: OkHttpClient = OkHttpClient.Builder().addInterceptor(interceptor).build()
-
-    private fun getRetrofit(): Retrofit {
-
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
-            .build()
-    }
-
-    private val retrofit: Retrofit = getRetrofit()
+    private val retrofit: Retrofit = RetrofitInstance.getRetrofitInstance()
 
     suspend fun register(email: String, password: String): String {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-
         val service: AuthApi = retrofit.create(AuthApi::class.java)
         val registration = service.register(RegistrationRequest(email, password))
         val token = registration.accessToken
@@ -52,8 +32,6 @@ class iTindrRepository(private val context: Context) {
     }
 
     suspend fun login(email: String, password: String): String {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-
         val service: AuthApi = retrofit.create(AuthApi::class.java)
         val login = service.login(LoginRequest(email, password))
         val token = login.accessToken
@@ -61,19 +39,22 @@ class iTindrRepository(private val context: Context) {
         return token
     }
 
-    suspend fun getTopicList(): List<TopicsRequest> {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val token = SaveTokenUtil.getToken(context)
+    suspend fun logout() {
+        val token = SaveTokenUtil.getToken(context) ?: ""
+        val service: AuthApi = retrofit.create(AuthApi::class.java)
+        service.logout("Bearer $token")
+        SaveTokenUtil.saveToken(context, "")
+    }
 
+    suspend fun getTopicList(): List<TopicsRequest> {
+        val token = SaveTokenUtil.getToken(context)
         val service: UserDataApi = retrofit.create(UserDataApi::class.java)
         val topics = service.getTopicList("Bearer $token")
         return topics
     }
 
     suspend fun updateUserProfile(updateProfRequest: UpdateProfRequest) {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val token = SaveTokenUtil.getToken(context)
-
         val service: UserDataApi = retrofit.create(UserDataApi::class.java)
         service.updateProfile("Bearer $token", updateProfRequest)
     }
@@ -84,16 +65,13 @@ class iTindrRepository(private val context: Context) {
         val byteArray = byteArrayOutputStream.toByteArray()
         val requestFile = RequestBody.create("image/jpeg".toMediaTypeOrNull(), byteArray)
         val body = MultipartBody.Part.createFormData("avatar", "avatar.jpg", requestFile)
-
         val token = SaveTokenUtil.getToken(context)
         val service: UserDataApi = retrofit.create(UserDataApi::class.java)
         service.updateAvatar("Bearer $token", body)
     }
 
     suspend fun getUserList(): List<UserRequest> {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val token = SaveTokenUtil.getToken(context)
-
         val service: UserDataApi = retrofit.create(UserDataApi::class.java)
         return service.getUserList("Bearer $token")
     }
@@ -123,17 +101,13 @@ class iTindrRepository(private val context: Context) {
     }
 
     suspend fun getChatsList(): List<GetChatRequest> {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val token = SaveTokenUtil.getToken(context)
-
         val service: ChatApi = retrofit.create(ChatApi::class.java)
         return service.getChatsList("Bearer $token")
     }
 
     suspend fun getMessagesList(chatId: String, limit: Int, offset: Int): List<MessageResponse> {
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val token = SaveTokenUtil.getToken(context)
-
         val service: ChatApi = retrofit.create(ChatApi::class.java)
         return service.getMessagesList("Bearer $token", chatId, limit, offset)
     }
@@ -146,9 +120,7 @@ class iTindrRepository(private val context: Context) {
     }
 
     suspend fun getMyProfile(): UserRequest{
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val token = SaveTokenUtil.getToken(context)
-
         val service: UserDataApi = retrofit.create(UserDataApi::class.java)
         return service.getMyProfile("Bearer $token")
     }

@@ -1,6 +1,5 @@
 package com.example.scareme.presentation.my_profile
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,7 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Output
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,7 +32,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scareme.R
+import com.example.scareme.common.ErrorDialog
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
+import com.example.scareme.navigation.AppScreens
 import com.example.scareme.presentation.bottomnav.NavigationBar
 import com.example.scareme.presentation.ui.theme.balooFontFamily
 
@@ -35,6 +42,7 @@ import com.example.scareme.presentation.ui.theme.balooFontFamily
 fun MyProfileScreen(navController: NavController) {
     val viewModel: MyProfileViewModel = viewModel(factory = MyProfileViewModelFactory(LocalContext.current))
     val user by viewModel.user.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchUser()
@@ -47,26 +55,57 @@ fun MyProfileScreen(navController: NavController) {
                 painterResource(id = R.drawable.back),
                 contentScale = ContentScale.FillBounds
             )
-            .padding(horizontal = 20.dp),
+            .padding(vertical = 20.dp, horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (user != null) {
-            Log.d("MyProfileScreen", "User data available: $user")
             UserProfile(user!!, navController)
         } else {
-            Log.d("MyProfileScreen", "User data is null, showing loading indicator")
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            if (errorMessage != null) {
+                ErrorDialog(errorMessage = errorMessage!!) {
+                    navController.navigate(AppScreens.HomeScreen.route) {
+                        popUpTo(navController.graph.startDestinationId)
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
 }
 
 @Composable
-fun UserProfile(user: UserRequest, navController: NavController) {
+fun UserProfile(
+    user: UserRequest,
+    navController: NavController
+) {
+    val viewModel: MyProfileViewModel = viewModel(factory = MyProfileViewModelFactory(LocalContext.current))
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 30.dp),
+        contentAlignment = Alignment.CenterEnd
+    ){
+        IconButton(onClick = {
+            viewModel.logout()
+            navController.navigate(AppScreens.HomeScreen.route)
+        }) {
+            Icon(
+                Icons.Filled.Output,
+                contentDescription = stringResource(R.string.log_out),
+                tint = Color(0xFFF6921D)
+            )
+        }
+    }
     Column(
         modifier = Modifier
-            .padding(top = 75.dp, bottom = 32.dp),
+            .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val painter = if (user.avatar != null) {
@@ -85,18 +124,16 @@ fun UserProfile(user: UserRequest, navController: NavController) {
 
         Text(
             text = user.name,
-            color = Color.White,
-            fontFamily = balooFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 36.sp,
-            modifier = Modifier.padding(top = 30.dp)
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(top = 10.dp)
         )
     }
 
     Spacer(modifier = Modifier.height(16.dp))
 
+    // Topics
     LazyColumn(
-        modifier = Modifier.height(150.dp)
+        modifier = Modifier.height(100.dp)
     ) {
         items(user.topics?.chunked(3) ?: emptyList()) { rowTopics ->
             Row(
@@ -132,6 +169,7 @@ fun UserProfile(user: UserRequest, navController: NavController) {
 
     Spacer(modifier = Modifier.height(16.dp))
 
+    // About description
     Text(
         text = user.aboutMyself ?: "",
         color = Color.White,

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.iTindrRepository
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 class SignInViewModel(context: Context) : ViewModel() {
     private val repository: iTindrRepository = iTindrRepository(context)
@@ -19,11 +20,23 @@ class SignInViewModel(context: Context) : ViewModel() {
                 val token = repository.login(email, password)
                 signInResult.value = token
                 errorMessage.value = null
+            } catch (e: HttpException) {
+                signInResult.value = null
+                errorMessage.value = when (e.code()) {
+                    400 -> "An error occurred, try later"
+                    404 -> "User not found, verify the credentials"
+                    500 -> "Something went wrong, check your internet"
+                    else -> "Unexpected error occurred"
+                }
             } catch (e: Exception) {
                 signInResult.value = null
-                errorMessage.value = e.message
+                errorMessage.value = "Something went wrong, check your connection"
             }
         }
+    }
+
+    fun resetErrorMessage() {
+        errorMessage.value = null
     }
 }
 

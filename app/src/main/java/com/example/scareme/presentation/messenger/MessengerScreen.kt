@@ -48,8 +48,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.scareme.common.ErrorDialog
 import com.example.scareme.data.repository.iTindrRepository
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
+import com.example.scareme.navigation.AppScreens
+import kotlinx.coroutines.delay
 
 @Composable
 fun MessengerScreen(
@@ -66,13 +69,34 @@ fun MessengerScreen(
         messengerViewModel.fetchMessages(chatId)
     }
 
+    LaunchedEffect(Unit) {
+        while (true) {
+            messengerViewModel.fetchMessages(chatId)
+            delay(30000)
+        }
+    }
+
     val messagesList by messengerViewModel.messagesList.collectAsState()
+    val errorMessage by messengerViewModel.errorMessage.collectAsState()
+
+    if (errorMessage != null) {
+        ErrorDialog(
+            errorMessage = errorMessage!!,
+            onDismiss = {
+                messengerViewModel.clearErrorMessage()
+                if (errorMessage == "Something went wrong, please check your connection") {
+                    navController.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF180c14))
-            .padding(vertical = 45.dp, horizontal = 10.dp),
+            .padding(horizontal = 10.dp)
+            .padding(top = 45.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         From(avatar, title, navController)
@@ -101,7 +125,11 @@ fun MessengerScreen(
 }
 
 @Composable
-fun From(avatar: String, title: String, navController: NavController) {
+fun From(
+    avatar: String,
+    title: String,
+    navController: NavController
+) {
     Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -177,7 +205,6 @@ fun MessageCloud(message: MessageResponse, chatTitle: String) {
         )
     }
 }
-
 
 @Composable
 fun SendMessage(onSend: (String) -> Unit) {

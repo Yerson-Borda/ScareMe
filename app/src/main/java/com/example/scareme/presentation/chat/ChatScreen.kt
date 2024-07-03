@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.scareme.R
+import com.example.scareme.common.ErrorDialog
 import com.example.scareme.data.repository.iTindrRepository
 import com.example.scareme.presentation.bottomnav.NavigationBar
 import com.example.scareme.presentation.ui.theme.balooFontFamily
@@ -41,14 +45,28 @@ fun ChatScreen(navController: NavController) {
 
     val chatList by chatViewModel.chatList.collectAsState()
 
+    val errorMessage by chatViewModel.errorMessage.collectAsState()
+
+    if (errorMessage != null) {
+        ErrorDialog(
+            errorMessage = errorMessage!!,
+            onDismiss = {
+                chatViewModel.clearErrorMessage()
+                if (errorMessage == "Something went wrong, please check your connection") {
+                    navController.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF180c14))
-            .padding(vertical = 25.dp, horizontal = 20.dp)
+            .padding(vertical = 20.dp, horizontal = 20.dp)
     ) {
         Text(
-            text = "Last",
+            text = stringResource(R.string.last),
             color = Color.White,
             fontSize = 44.sp,
             fontFamily = balooFontFamily,
@@ -58,7 +76,7 @@ fun ChatScreen(navController: NavController) {
         UserItem(chatList)
 
         Text(
-            text = "Messages",
+            text = stringResource(R.string.messages),
             color = Color.White,
             fontSize = 44.sp,
             fontFamily = balooFontFamily,
@@ -76,7 +94,7 @@ fun ChatScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "You don't have messages yet",
+                    text = stringResource(R.string.you_don_t_have_messages_yet),
                     color = Color.White,
                     fontSize = 20.sp,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -90,9 +108,8 @@ fun ChatScreen(navController: NavController) {
                         containerColor = Color(0xFFF6921D)),
                 ) {
                     Text(
-                        "Find people",
-                        fontFamily = balooFontFamily,
-                        fontWeight = FontWeight.Bold
+                        stringResource(R.string.find_people),
+                        style = MaterialTheme.typography.displaySmall
                     )
                 }
                 Column(

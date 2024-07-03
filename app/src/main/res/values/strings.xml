@@ -1,4 +1,30 @@
 <resources>
     <string name="app_name">Scare Me</string>
     <string name="sign_in">Sign In</string>
+    <string name="app_logo">App Logo</string>
+    <string name="title">ScareMe</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="user_already">Already have an account?</string>
+    <string name="e_mail">E-mail</string>
+    <string name="password">Password</string>
+    <string name="hide_password">hide password</string>
+    <string name="show_password">show password</string>
+    <string name="repeat_password">Repeat Password</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="why_are_you_scary">Why are you scary?</string>
+    <string name="avatar">Avatar</string>
+    <string name="name">Name</string>
+    <string name="about">About</string>
+    <string name="party_topics">Party Topics</string>
+    <string name="save">Save</string>
+    <string name="trick_or_treat">Trick or Treat?</string>
+    <string name="no_profiles_available">No profiles available</string>
+    <string name="loading">Loading...</string>
+    <string name="last">Last</string>
+    <string name="messages">Messages</string>
+    <string name="you_don_t_have_messages_yet">You don\'t have messages yet</string>
+    <string name="find_people">Find people</string>
+    <string name="log_out">Log out</string>
+    <string name="ok">Ok</string>
+    <string name="error">Error</string>
 </resources>

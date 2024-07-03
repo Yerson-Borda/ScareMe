@@ -1,4 +1,4 @@
-package com.example.scareme.presentation.launch
+package com.example.scareme.presentation.launch_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,18 +51,15 @@ fun Splash() {
     ) {
         Image(
             painter = painterResource(id = R.drawable.logo),
-            contentDescription = "ScareMe Logo",
+            contentDescription = stringResource(R.string.app_logo),
             modifier = Modifier.size(396.dp)
         )
 
         Spacer(modifier = Modifier.height(34.dp))
 
         Text(
-            text = "ScareMe",
-            fontFamily = jollyFontFamily,
-            fontWeight = FontWeight.Normal,
-            fontSize = 100.sp,
-            color = Color(0xFFF6921D)
+            text = stringResource(R.string.title),
+            style = MaterialTheme.typography.titleLarge
         )
     }
 }

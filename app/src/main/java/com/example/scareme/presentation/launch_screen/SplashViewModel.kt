@@ -1,4 +1,4 @@
-package com.example.scareme.presentation.launch
+package com.example.scareme.presentation.launch_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

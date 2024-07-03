@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.iTindrRepository
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 class SignUpViewModel(private val context: Context) : ViewModel() {
     private val repository: iTindrRepository = iTindrRepository(context)
@@ -27,9 +28,21 @@ class SignUpViewModel(private val context: Context) : ViewModel() {
                 errorMessage.value = null
             } catch (e: Exception) {
                 signUpResult.value = null
-                errorMessage.value = e.message
+                errorMessage.value = when (e) {
+                    is HttpException -> when (e.code()) {
+                        400 -> "An error occurred, try later"
+                        409 -> "The user already exists"
+                        500 -> "Something went wrong, check your internet"
+                        else -> "Unexpected error occurred"
+                    }
+                    else -> "Something went wrong, check your connection"
+                }
             }
         }
+    }
+
+    fun resetErrorMessage() {
+        errorMessage.value = null
     }
 }
 

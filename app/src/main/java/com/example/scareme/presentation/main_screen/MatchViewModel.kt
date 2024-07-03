@@ -1,4 +1,4 @@
-package com.example.scareme.presentation.user_details
+package com.example.scareme.presentation.main_screen
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -12,10 +12,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
+class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
 
-    private val _user = MutableStateFlow<UserRequest?>(null)
-    val user: StateFlow<UserRequest?> = _user
+    private val _profiles = MutableStateFlow<List<UserRequest>>(emptyList())
+    val profiles: StateFlow<List<UserRequest>> = _profiles
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -23,14 +23,12 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    fun fetchUser() {
+    fun fetchProfiles() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userList = repository.getUserList()
-                if (userList.isNotEmpty()) {
-                    _user.value = userList[0]
-                }
+                val userList = repository.getUserNamesAndAvatars()
+                _profiles.value = userList
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
@@ -45,7 +43,8 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 repository.likeProfile(userId)
-                fetchUser()
+                repository.createChat(userId)
+                fetchProfiles()
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
@@ -58,7 +57,7 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 repository.dislikeProfile(userId)
-                fetchUser()
+                fetchProfiles()
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
@@ -85,11 +84,11 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
     }
 }
 
-class ProfileViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-            return ProfileViewModel(iTindrRepository(context)) as T
+        if (modelClass.isAssignableFrom(MatchViewModel::class.java)) {
+            return MatchViewModel(iTindrRepository(context)) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

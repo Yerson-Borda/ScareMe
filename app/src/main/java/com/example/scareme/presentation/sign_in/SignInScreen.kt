@@ -9,19 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,20 +23,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.scareme.R
+import com.example.scareme.common.ErrorDialog
 import com.example.scareme.domain.UseCases.EmailState
 import com.example.scareme.domain.UseCases.PasswordState
 import com.example.scareme.navigation.AppScreens
-import com.example.scareme.presentation.ui.theme.balooFontFamily
+import com.example.scareme.presentation.sign_in.components.Email
+import com.example.scareme.presentation.sign_in.components.Password
 
 @Composable
 fun SignInScreen(navController: NavController) {
@@ -54,6 +41,7 @@ fun SignInScreen(navController: NavController) {
 
     val loginResult by remember { viewModel.signInResult }
     val errorMessage by remember { viewModel.errorMessage }
+    val showDialog = remember { mutableStateOf(false) }
 
     if (loginResult != null) {
         navController.navigate(AppScreens.Cards.route)
@@ -65,6 +53,20 @@ fun SignInScreen(navController: NavController) {
         },
         errorMessage = errorMessage
     )
+
+    if (errorMessage != null) {
+        showDialog.value = true
+    }
+
+    if (showDialog.value) {
+        ErrorDialog(
+            errorMessage = errorMessage ?: "",
+            onDismiss = {
+                showDialog.value = false
+                viewModel.resetErrorMessage()
+            }
+        )
+    }
 }
 
 @Composable
@@ -76,7 +78,7 @@ fun SignInScreenContent(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF180c14))
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 40.dp),
         verticalArrangement = Arrangement.Center
     ){
         val emailState = remember { EmailState() }
@@ -88,6 +90,7 @@ fun SignInScreenContent(
             verticalArrangement = Arrangement.Center
         ) {
             Title()
+
             val localFocusManager = LocalFocusManager.current
 
             Email(
@@ -126,16 +129,13 @@ fun SignInScreenContent(
                 enabled = emailState.isValid() && passwordState.isValid(),
                 onClick = {
                     signIn(emailState.text, passwordState.text)
-                    //If the inputted email and password matches with any in the API go to next page
-                    //Else throw error
                 }
             )
             errorMessage?.let {
                 Text(
                     text = it,
-                    color = Color.Red,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 8.dp),
-                    fontSize = 14.sp
                 )
             }
         }
@@ -146,57 +146,8 @@ fun SignInScreenContent(
 fun Title(){
     Text(
         text = stringResource(R.string.sign_in),
-        style = MaterialTheme.typography.titleLarge
+        style = MaterialTheme.typography.titleMedium
     )
-}
-
-@Composable
-fun Email(
-    email: String,
-    error: String?,
-    onEmailChanged: (String) -> Unit,
-    onImeAction: () -> Unit
-){
-    Column {
-        TextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            value = email,
-            onValueChange = { onEmailChanged(it) },
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color(0xFF401c34),
-                unfocusedTextColor = Color.White,
-                focusedContainerColor = Color(0xFF401c34),
-                focusedTextColor = Color.White,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent
-            ),
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            label = {
-                Text(
-                    text = "E-mail",
-                    fontFamily = balooFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.White
-                )
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Email,
-                imeAction = ImeAction.Next
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    onImeAction()
-                }
-            ),
-            isError = error != null
-        )
-
-        error?.let { ErrorField(it) }
-    }
 }
 
 @Composable
@@ -206,79 +157,8 @@ fun ErrorField(error: String){
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 10.dp),
-        color = Color.Red,
-        fontSize = 14.sp,
-        fontFamily = balooFontFamily,
-        fontWeight = FontWeight.Bold
+        style = MaterialTheme.typography.labelSmall,
     )
-}
-
-@Composable
-fun Password(
-    password: String,
-    error: String?,
-    onPasswordChanged: (String) -> Unit,
-    onImeAction: () -> Unit
-){
-    val showPassword = remember { mutableStateOf(false) }
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        value = password,
-        onValueChange = { onPasswordChanged(it) },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color(0xFF401c34),
-            unfocusedTextColor = Color.White,
-            focusedContainerColor = Color(0xFF401c34),
-            focusedTextColor = Color.White,
-            unfocusedIndicatorColor =  Color.Transparent,
-            focusedIndicatorColor =  Color.Transparent
-        ),
-        singleLine = true,
-        shape = RoundedCornerShape(16.dp),
-        visualTransformation = if (showPassword.value) {
-            VisualTransformation.None
-        }  else {
-            PasswordVisualTransformation()
-        },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(onDone = { onImeAction() }),
-        label = {
-            Text(
-                text = "Password",
-                fontFamily = balooFontFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = Color.White
-            )
-        },
-        trailingIcon = {
-            if (showPassword.value){
-                IconButton(onClick = { showPassword.value = false }) {
-                    Icon(
-                        imageVector = Icons.Filled.Visibility,
-                        tint = Color.White,
-                        contentDescription = "hide password"
-                    )
-                }
-            } else {
-                IconButton(onClick = { showPassword.value = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.VisibilityOff,
-                        tint = Color.White,
-                        contentDescription = "show password"
-                    )
-                }
-            }
-        },
-        isError = error != null
-    )
-
-    error?.let { ErrorField(it) }
 }
 
 @Composable
@@ -297,9 +177,7 @@ fun SignInButton(enabled: Boolean, onClick: () -> Unit){
     ) {
         Text(
             text = stringResource(R.string.sign_in),
-            fontFamily = balooFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            style = MaterialTheme.typography.displaySmall
         )
     }
 }

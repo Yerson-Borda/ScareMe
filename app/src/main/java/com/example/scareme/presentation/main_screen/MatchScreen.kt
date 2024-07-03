@@ -1,4 +1,4 @@
-package com.example.scareme.presentation.cards
+package com.example.scareme.presentation.main_screen
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -9,11 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +20,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,9 +32,11 @@ import com.alexstyl.swipeablecard.ExperimentalSwipeableCardApi
 import com.alexstyl.swipeablecard.rememberSwipeableCardState
 import com.alexstyl.swipeablecard.swipableCard
 import com.example.scareme.R
+import com.example.scareme.common.ErrorDialog
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import com.example.scareme.navigation.AppScreens
 import com.example.scareme.presentation.bottomnav.NavigationBar
+import com.example.scareme.presentation.main_screen.components.LoadingScreen
 import com.example.scareme.presentation.ui.theme.balooFontFamily
 import kotlinx.coroutines.launch
 
@@ -55,6 +54,24 @@ fun Matches(navController: NavController, viewModel: MatchViewModel) {
         viewModel.fetchProfiles()
     }
 
+    val profiles by viewModel.profiles.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val scope = rememberCoroutineScope()
+    val states = profiles.reversed().map { it to rememberSwipeableCardState() }
+
+    if (errorMessage != null) {
+        ErrorDialog(
+            errorMessage = errorMessage!!,
+            onDismiss = {
+                viewModel.clearErrorMessage()
+                if (errorMessage == "Something went wrong, please check your connection") {
+                    navController.navigate(AppScreens.HomeScreen.route)
+                }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -67,66 +84,77 @@ fun Matches(navController: NavController, viewModel: MatchViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Trick or Treat?",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
+            text = stringResource(R.string.trick_or_treat),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier
                 .align(Alignment.Start)
                 .padding(start = 12.dp, bottom = 5.dp, top = 15.dp)
         )
 
-        val profiles by viewModel.profiles.collectAsState()
-        val scope = rememberCoroutineScope()
-        val states = profiles.reversed()
-            .map { it to rememberSwipeableCardState() }
-        if (profiles.isNotEmpty()) {
+        if (isLoading) {
             Box(
-                modifier = Modifier
-                    .size(height = 508.dp, width = 318.dp)
-                    .align(Alignment.CenterHorizontally),
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                states.forEach { (user, state) ->
-                    if (state.swipedDirection == null) {
-                        ProfileCard(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .swipableCard(
-                                    state = state,
-                                    blockedDirections = listOf(Direction.Down),
-                                    onSwiped = { direction ->
-                                        when (direction) {
-                                            Direction.Left -> {
-                                                viewModel.dislikeProfile(user.userId ?: "")
-                                            }
-
-                                            Direction.Right -> {
-                                                viewModel.likeProfile(user.userId ?: "")
-                                            }
-
-                                            else -> Log.d(
-                                                "Swipeable-Card",
-                                                "Unhandled swipe direction: $direction"
-                                            )
-                                        }
-                                    },
-                                    onSwipeCancel = {
-                                        Log.d("Swipeable-Card", "Cancelled swipe")
-                                    }
-                                ),
-                            user = user,
-                            navController = navController
-                        )
-                    }
-                }
+                LoadingScreen()
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            if (profiles.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .size(height = 508.dp, width = 318.dp)
+                        .align(Alignment.CenterHorizontally),
+                ) {
+
+                    // https://github.com/alexstyl/compose-tinder-card (Swipe Cards)
+                    states.forEach { (user, state) ->
+                        if (state.swipedDirection == null) {
+                            ProfileCard(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .swipableCard(
+                                        state = state,
+                                        blockedDirections = listOf(Direction.Down),
+                                        onSwiped = { direction ->
+                                            when (direction) {
+                                                Direction.Left -> {
+                                                    viewModel.dislikeProfile(user.userId ?: "")
+                                                }
+
+                                                Direction.Right -> {
+                                                    viewModel.likeProfile(user.userId ?: "")
+                                                }
+
+                                                else -> Log.d(
+                                                    "Swipeable-Card",
+                                                    "Unhandled swipe direction: $direction"
+                                                )
+                                            }
+                                        },
+                                        onSwipeCancel = {
+                                            Log.d("Swipeable-Card", "Cancelled swipe")
+                                        }
+                                    ),
+                                user = user,
+                                navController = navController
+                            )
+                        }
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.no_profiles_available),
+                        style = MaterialTheme.typography.displaySmall
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Row(
             modifier = Modifier
@@ -168,10 +196,10 @@ fun Matches(navController: NavController, viewModel: MatchViewModel) {
             )
         }
 
-        Column (
+        Column(
             Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
-        ){
+        ) {
             NavigationBar(navController)
         }
     }
