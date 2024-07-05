@@ -23,12 +23,22 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
+    private var currentPage = 0
+    private val pageSize = 10
+
+    init {
+        fetchProfiles()
+    }
+
     fun fetchProfiles() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userList = repository.getUserNamesAndAvatars()
-                _profiles.value = userList
+                val userList = repository.getUserNamesAndAvatars(currentPage, pageSize)
+                if (userList.isNotEmpty()) {
+                    _profiles.value = _profiles.value + userList
+                    currentPage++
+                }
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
@@ -44,7 +54,8 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
             try {
                 repository.likeProfile(userId)
                 repository.createChat(userId)
-                fetchProfiles()
+                removeProfile(userId)
+                fetchProfilesIfNeeded()
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
@@ -57,12 +68,23 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 repository.dislikeProfile(userId)
-                fetchProfiles()
+                removeProfile(userId)
+                fetchProfilesIfNeeded()
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: IOException) {
                 _errorMessage.value = "Something went wrong, please check your connection"
             }
+        }
+    }
+
+    private fun removeProfile(userId: String) {
+        _profiles.value = _profiles.value.filterNot { it.userId == userId }
+    }
+
+    private fun fetchProfilesIfNeeded() {
+        if (_profiles.value.size < pageSize) {
+            fetchProfiles()
         }
     }
 

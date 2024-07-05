@@ -20,9 +20,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -73,7 +73,7 @@ fun ChatScreen(navController: NavController) {
             fontWeight = FontWeight.Bold
         )
 
-        UserItem(chatList)
+        UserItem(chatList, navController)
 
         Text(
             text = stringResource(R.string.messages),
@@ -83,26 +83,21 @@ fun ChatScreen(navController: NavController) {
             fontWeight = FontWeight.Bold
         )
 
-        MessageItem(chatList, navController)
-
         if (chatList.isEmpty()) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 50.dp),
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = stringResource(R.string.you_don_t_have_messages_yet),
                     color = Color.White,
+                    modifier = Modifier.padding(bottom = 16.dp),
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Button(
                     onClick = { navController.navigate(AppScreens.Cards.route) },
-                    modifier = Modifier
-                        .padding(bottom = 16.dp),
                     colors = ButtonDefaults.buttonColors(
                         contentColor = Color(0xFF180c14),
                         containerColor = Color(0xFFF6921D)),
@@ -112,6 +107,7 @@ fun ChatScreen(navController: NavController) {
                         style = MaterialTheme.typography.displaySmall
                     )
                 }
+
                 Column(
                     Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom
@@ -120,6 +116,8 @@ fun ChatScreen(navController: NavController) {
                 }
             }
         }
+
+        MessageItem(chatList, navController)
 
         Column(
             Modifier.fillMaxSize(),
@@ -131,9 +129,9 @@ fun ChatScreen(navController: NavController) {
 }
 
 @Composable
-fun UserItem(chatList: List<GetChatRequest>) {
+fun UserItem(chatList: List<GetChatRequest>, navController: NavController) {
     LazyRow(
-        modifier = Modifier.padding(top = 10.dp, bottom = 30.dp),
+        modifier = Modifier.padding(top = 5.dp, bottom = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -141,12 +139,23 @@ fun UserItem(chatList: List<GetChatRequest>) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                val painter = if (chatRequest.chat.avatar != null) {
+                    rememberAsyncImagePainter(chatRequest.chat.avatar)
+                } else {
+                    painterResource(id = R.drawable.def)
+                }
                 Image(
-                    painter = rememberAsyncImagePainter(model = chatRequest.chat.avatar),
+                    painter = painter,
                     contentDescription = null,
                     modifier = Modifier
                         .size(82.dp)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .clickable {
+                            val encodedAvatar = URLEncoder.encode(chatRequest.chat.avatar, "UTF-8")
+                            navController.navigate(
+                                "${AppScreens.Messenger.route}/${chatRequest.chat.id}/$encodedAvatar/${chatRequest.chat.title}"
+                            )
+                        },
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -165,7 +174,9 @@ fun UserItem(chatList: List<GetChatRequest>) {
 @Composable
 fun MessageItem(chatList: List<GetChatRequest>, navController: NavController) {
     LazyColumn(
-        modifier = Modifier.padding(vertical = 16.dp),
+        modifier = Modifier
+            .padding(vertical = 16.dp)
+            .size(width = 360.dp, height = 340.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(chatList) { chatRequest ->
@@ -182,8 +193,13 @@ fun MessageItem(chatList: List<GetChatRequest>, navController: NavController) {
             ) {
                 val lastMessage = chatRequest.lastMessage
                 if (lastMessage != null) {
+                    val painter = if (chatRequest.chat.avatar != null) {
+                        rememberAsyncImagePainter(chatRequest.chat.avatar)
+                    } else {
+                        painterResource(id = R.drawable.def)
+                    }
                     Image(
-                        painter = rememberAsyncImagePainter(model = chatRequest.chat.avatar),
+                        painter = painter,
                         contentDescription = null,
                         modifier = Modifier
                             .size(70.dp)
@@ -197,7 +213,7 @@ fun MessageItem(chatList: List<GetChatRequest>, navController: NavController) {
                             fontSize = 17.sp,
                             fontFamily = balooFontFamily,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 16.dp, bottom = 15.dp)
+                            modifier = Modifier.padding(start = 16.dp, bottom = 7.dp)
                         )
                         Divider(
                             color = Color(0xFFB14623),
@@ -205,15 +221,6 @@ fun MessageItem(chatList: List<GetChatRequest>, navController: NavController) {
                             modifier = Modifier.padding(start = 16.dp)
                         )
                     }
-                } else {
-                    Text(
-                        text = "No more messages",
-                        color = Color.Gray,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        fontFamily = balooFontFamily,
-                        modifier = Modifier.padding(start = 16.dp, bottom = 15.dp)
-                    )
                 }
             }
         }

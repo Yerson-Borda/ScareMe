@@ -76,9 +76,15 @@ class iTindrRepository(private val context: Context) {
         return service.getUserList("Bearer $token")
     }
 
-    suspend fun getUserNamesAndAvatars(): List<UserRequest> {
+    suspend fun getUserNamesAndAvatars(page: Int, size: Int): List<UserRequest> {
         val userList = getUserList()
-        return userList.map { UserRequest(it.userId, it.name, it.aboutMyself, it.avatar, it.topics) }
+        val fromIndex = page * size
+        val toIndex = minOf(fromIndex + size, userList.size)
+        return if (fromIndex < userList.size) {
+            userList.subList(fromIndex, toIndex).map { UserRequest(it.userId, it.name, it.aboutMyself, it.avatar, it.topics) }
+        } else {
+            emptyList()
+        }
     }
 
     suspend fun likeProfile(userId: String) {

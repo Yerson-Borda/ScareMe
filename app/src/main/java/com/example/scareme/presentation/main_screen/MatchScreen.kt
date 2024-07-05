@@ -50,10 +50,6 @@ fun Main(navController: NavController) {
 @OptIn(ExperimentalSwipeableCardApi::class)
 @Composable
 fun Matches(navController: NavController, viewModel: MatchViewModel) {
-    LaunchedEffect(Unit) {
-        viewModel.fetchProfiles()
-    }
-
     val profiles by viewModel.profiles.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -106,7 +102,6 @@ fun Matches(navController: NavController, viewModel: MatchViewModel) {
                         .align(Alignment.CenterHorizontally),
                 ) {
 
-                    // https://github.com/alexstyl/compose-tinder-card (Swipe Cards)
                     states.forEach { (user, state) ->
                         if (state.swipedDirection == null) {
                             ProfileCard(

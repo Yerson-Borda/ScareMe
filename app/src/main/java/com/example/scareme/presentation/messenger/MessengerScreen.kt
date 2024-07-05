@@ -140,7 +140,7 @@ fun From(
             modifier = Modifier
                 .padding(16.dp)
                 .clickable {
-                    navController.popBackStack()
+                    navController.navigate(AppScreens.Chat.route)
                 },
             tint = Color.White
         )

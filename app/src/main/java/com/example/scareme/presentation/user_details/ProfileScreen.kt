@@ -36,10 +36,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import com.example.scareme.navigation.AppScreens
+import com.example.scareme.presentation.main_screen.MatchViewModel
+import com.example.scareme.presentation.main_screen.ViewModelFactory
 
 @Composable
 fun ProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(LocalContext.current))
+    val matchViewModel: MatchViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))
     val user by viewModel.user.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -162,8 +165,9 @@ fun ProfileScreen(navController: NavController) {
                     CircleButton(
                         onClick = {
                             scope.launch {
+                                matchViewModel.dislikeProfile(it.userId ?: "")
                                 viewModel.dislikeProfile(it.userId ?: "")
-                                navController.popBackStack()
+                                navController.navigate(AppScreens.Cards.route)
                             }
                         },
                         icon = painterResource(id = R.drawable.pass)
@@ -172,8 +176,9 @@ fun ProfileScreen(navController: NavController) {
                     CircleButton(
                         onClick = {
                             scope.launch {
+                                matchViewModel.likeProfile(it.userId ?: "")
                                 viewModel.likeProfile(it.userId ?: "")
-                                navController.popBackStack()
+                                navController.navigate(AppScreens.Cards.route)
                             }
                         },
                         icon = painterResource(id = R.drawable.like)

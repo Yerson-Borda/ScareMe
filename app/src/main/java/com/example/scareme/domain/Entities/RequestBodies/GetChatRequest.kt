@@ -8,7 +8,7 @@ data class GetChatRequest(
 data class Chat(
     val id: String,
     val title: String,
-    val avatar: String
+    val avatar: String?
 )
 
 data class LastMessage(
@@ -23,7 +23,7 @@ data class User(
     val userId: String,
     val name: String,
     val aboutMyself: String,
-    val avatar: String
+    val avatar: String?
 )
 
 data class MessageResponse(
