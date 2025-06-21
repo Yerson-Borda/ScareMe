@@ -72,10 +72,7 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
             400 -> "An error occurred, try later"
             401, 403 -> "Please, log in again"
             404 -> "Resource not found"
-            500 -> {
-                _errorMessage.value = "Something went wrong, please check your connection"
-                null
-            }
+            500 -> "Something went wrong, please check your connection"
             else -> "An unexpected error occurred"
         }
     }

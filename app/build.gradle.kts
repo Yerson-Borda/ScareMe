@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.testImplementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -76,6 +78,20 @@ dependencies {
     //Coil - images
     implementation ("io.coil-kt:coil-compose:2.0.0")
     implementation ("io.coil-kt:coil:2.0.0")
+
+    // Kotlin Coroutines Test
+    testImplementation(libs.kotlinx.coroutines.test)
+
+    // Mockito for mocking
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation ("io.mockk:mockk:1.13.7")
+
+    // JUnit
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.androidx.ui.test.junit4.v183)
+    debugImplementation(libs.ui.test.manifest)
 
 
     implementation(libs.androidx.core.ktx)

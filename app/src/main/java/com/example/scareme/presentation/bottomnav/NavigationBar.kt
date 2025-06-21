@@ -28,7 +28,7 @@ fun NavigationBar(navController: NavController) {
             icon = {
                 Icon(
                     painter = painterResource(id = if (currentRoute == AppScreens.Cards.route) R.drawable.homeon else R.drawable.homeoff),
-                    contentDescription = null,
+                    contentDescription = "Cards",
                     modifier = Modifier.size(if (currentRoute == AppScreens.Cards.route) 40.dp else 26.dp),
                     tint = Color.Unspecified
                 )
@@ -45,7 +45,7 @@ fun NavigationBar(navController: NavController) {
             icon = {
                 Icon(
                     painter = painterResource(id = if (currentRoute == AppScreens.Chat.route) R.drawable.chaton else R.drawable.chatoff),
-                    contentDescription = null,
+                    contentDescription = "Chat",
                     modifier = Modifier.size(if (currentRoute == AppScreens.Chat.route) 40.dp else 26.dp),
                     tint = Color.Unspecified
                 )
@@ -62,7 +62,7 @@ fun NavigationBar(navController: NavController) {
             icon = {
                 Icon(
                     painter = painterResource(id = if (currentRoute == AppScreens.MyProfile.route) R.drawable.profileon else R.drawable.profileoff),
-                    contentDescription = null,
+                    contentDescription = "My Profile",
                     modifier = Modifier.size(if (currentRoute == AppScreens.MyProfile.route) 40.dp else 26.dp),
                     tint = Color.Unspecified
                 )

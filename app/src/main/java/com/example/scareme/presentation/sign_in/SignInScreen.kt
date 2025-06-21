@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -135,7 +137,9 @@ fun SignInScreenContent(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .testTag("InlineErrorMessage"),
                 )
             }
         }
@@ -181,3 +185,43 @@ fun SignInButton(enabled: Boolean, onClick: () -> Unit){
         )
     }
 }
+
+@Composable
+fun SignInScreenInternal(navController: NavController, viewModel: ISignInViewModel, navigateToCards: () -> Unit = { navController.navigate(AppScreens.Cards.route) }) {
+    val loginResult by viewModel.signInResult
+    val errorMessage by viewModel.errorMessage
+    val showDialog = remember { mutableStateOf(false) }
+
+    if (loginResult != null) {
+        navigateToCards()
+    }
+
+    SignInScreenContent(
+        signIn = { email, password ->
+            viewModel.login(email, password)
+        },
+        errorMessage = errorMessage
+    )
+
+    if (errorMessage != null) {
+        showDialog.value = true
+    }
+
+    if (showDialog.value) {
+        ErrorDialog(
+            errorMessage = errorMessage ?: "",
+            onDismiss = {
+                showDialog.value = false
+                viewModel.resetErrorMessage()
+            }
+        )
+    }
+}
+
+interface ISignInViewModel {
+    val signInResult: MutableState<String?>
+    val errorMessage: MutableState<String?>
+    fun login(email: String, password: String)
+    fun resetErrorMessage()
+}
+

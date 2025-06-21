@@ -9,8 +9,11 @@ import com.example.scareme.data.repository.iTindrRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
-class SignUpViewModel(private val context: Context) : ViewModel() {
+class SignUpViewModel(
+    private val context: Context,
     private val repository: iTindrRepository = iTindrRepository(context)
+) : ViewModel() {
+//    private val repository: iTindrRepository = iTindrRepository(context)
     val signUpResult = mutableStateOf<String?>(null)
     val errorMessage = mutableStateOf<String?>(null)
     val repeatPassword = mutableStateOf("")

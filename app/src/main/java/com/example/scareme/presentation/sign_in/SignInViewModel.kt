@@ -9,12 +9,12 @@ import com.example.scareme.data.repository.iTindrRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
-class SignInViewModel(context: Context) : ViewModel() {
+open class SignInViewModel(context: Context) : ViewModel(), ISignInViewModel {
     private val repository: iTindrRepository = iTindrRepository(context)
-    val signInResult = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
+    override val signInResult = mutableStateOf<String?>(null)
+    override val errorMessage = mutableStateOf<String?>(null)
 
-    fun login(email: String, password: String) {
+    override fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
                 val token = repository.login(email, password)
@@ -35,7 +35,7 @@ class SignInViewModel(context: Context) : ViewModel() {
         }
     }
 
-    fun resetErrorMessage() {
+    override fun resetErrorMessage() {
         errorMessage.value = null
     }
 }
