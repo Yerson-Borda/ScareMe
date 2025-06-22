@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -19,7 +20,8 @@ import com.example.scareme.navigation.AppScreens
 data class NavItem(
     val route: String,
     val iconOn: Int,
-    val iconOff: Int
+    val iconOff: Int,
+    val contentDescription: String
 )
 
 @Composable
@@ -28,9 +30,9 @@ fun NavigationBar(navController: NavController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val navItems = listOf(
-        NavItem(AppScreens.Cards.route, R.drawable.homeon, R.drawable.homeoff),
-        NavItem(AppScreens.Chat.route, R.drawable.chaton, R.drawable.chatoff),
-        NavItem(AppScreens.MyProfile.route, R.drawable.profileon, R.drawable.profileoff)
+        NavItem(AppScreens.Cards.route, R.drawable.homeon, R.drawable.homeoff, "Home"),
+        NavItem(AppScreens.Chat.route, R.drawable.chaton, R.drawable.chatoff, "Chat"),
+        NavItem(AppScreens.MyProfile.route, R.drawable.profileon, R.drawable.profileoff, "Profile")
     )
 
     NavigationBar(containerColor = Color.Transparent) {
@@ -40,7 +42,7 @@ fun NavigationBar(navController: NavController) {
                 icon = {
                     Icon(
                         painter = painterResource(id = if (selected) item.iconOn else item.iconOff),
-                        contentDescription = null,
+                        contentDescription = item.contentDescription,
                         modifier = Modifier.size(if (selected) 40.dp else 26.dp),
                         tint = Color.Unspecified
                     )

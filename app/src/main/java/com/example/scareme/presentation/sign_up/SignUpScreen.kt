@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.scareme.R
 import com.example.scareme.common.ErrorDialog
+import com.example.scareme.domain.Entities.RequestBodies.RegistrationRequest
 import com.example.scareme.domain.UseCases.EmailState
 import com.example.scareme.domain.UseCases.PasswordState
 import com.example.scareme.navigation.AppScreens
@@ -51,7 +52,7 @@ fun SignUpScreen(navController: NavController) {
 
     SignUpScreenContent(
         register = { email, password, repeatPassword ->
-            viewModel.register(email, password, repeatPassword)
+            viewModel.register(RegistrationRequest(email, password, repeatPassword))
         },
         errorMessage = (uiState as? SignUpUiState.Error)?.message,
         repeatPassword = repeatPassword,
