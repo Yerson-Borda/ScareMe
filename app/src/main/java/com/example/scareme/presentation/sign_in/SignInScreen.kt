@@ -39,32 +39,29 @@ fun SignInScreen(navController: NavController) {
     val context = LocalContext.current.applicationContext
     val viewModel: SignInViewModel = viewModel(factory = SignInViewModelFactory(context))
 
-    val signInResult = viewModel.signInResult.value
-    val errorMessage = viewModel.errorMessage.value
+    val uiState by viewModel.uiState
     val showDialog = remember { mutableStateOf(false) }
 
-    if (signInResult != null) {
+    if (uiState is SignInUiState.Success) {
         navController.navigate(AppScreens.Cards.route)
-        viewModel.signInResult.value = null
+        viewModel.resetError()
     }
 
     SignInScreenContent(
-        signIn = { email, password ->
-            viewModel.login(email, password)
-        },
-        errorMessage = errorMessage
+        signIn = { email, password -> viewModel.login(email, password) },
+        errorMessage = (uiState as? SignInUiState.Error)?.message
     )
 
-    if (errorMessage != null) {
+    if (uiState is SignInUiState.Error) {
         showDialog.value = true
     }
 
     if (showDialog.value) {
         ErrorDialog(
-            errorMessage = errorMessage ?: "",
+            errorMessage = (uiState as? SignInUiState.Error)?.message ?: "",
             onDismiss = {
                 showDialog.value = false
-                viewModel.resetErrorMessage()
+                viewModel.resetError()
             }
         )
     }

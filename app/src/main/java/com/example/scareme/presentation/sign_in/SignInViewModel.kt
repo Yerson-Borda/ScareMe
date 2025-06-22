@@ -12,32 +12,31 @@ import retrofit2.HttpException
 
 class SignInViewModel(context: Context) : ViewModel() {
     private val repository: AuthRepository = AuthRepository(context)
-    val signInResult = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
+    val uiState = mutableStateOf<SignInUiState>(SignInUiState.Idle)
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
+            uiState.value = SignInUiState.Loading
             try {
                 val token = repository.login(LoginRequest(email, password))
-                signInResult.value = token
-                errorMessage.value = null
+                uiState.value = SignInUiState.Success(token)
             } catch (e: HttpException) {
-                signInResult.value = null
-                errorMessage.value = when (e.code()) {
-                    400 -> "An error occurred, try later"
-                    404 -> "User not found, verify the credentials"
-                    500 -> "Something went wrong, check your internet"
-                    else -> "Unexpected error occurred"
-                }
+                uiState.value = SignInUiState.Error(
+                    when (e.code()) {
+                        400 -> "An error occurred, try later"
+                        404 -> "User not found, verify the credentials"
+                        500 -> "Something went wrong, check your internet"
+                        else -> "Unexpected error occurred"
+                    }
+                )
             } catch (e: Exception) {
-                signInResult.value = null
-                errorMessage.value = "Something went wrong, check your connection"
+                uiState.value = SignInUiState.Error("Something went wrong, check your connection")
             }
         }
     }
 
-    fun resetErrorMessage() {
-        errorMessage.value = null
+    fun resetError() {
+        uiState.value = SignInUiState.Idle
     }
 }
 
@@ -49,4 +48,11 @@ class SignInViewModelFactory(private val context: Context) : ViewModelProvider.F
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
+}
+
+sealed class SignInUiState {
+    object Idle : SignInUiState()
+    object Loading : SignInUiState()
+    data class Success(val token: String) : SignInUiState()
+    data class Error(val message: String) : SignInUiState()
 }
