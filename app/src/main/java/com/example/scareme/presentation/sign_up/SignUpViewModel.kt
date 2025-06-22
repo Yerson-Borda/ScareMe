@@ -1,5 +1,6 @@
 package com.example.scareme.presentation.sign_up
 
+import android.R.attr.password
 import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -19,8 +20,8 @@ class SignUpViewModel(private val context: Context) : ViewModel() {
 
     val repeatPassword = mutableStateOf("")
 
-    fun register(email: String, password: String, repeatPassword: String) {
-        if (password != repeatPassword) {
+    fun register(credentials: RegistrationRequest) {
+        if (credentials.password != credentials.repeatPassword) {
             _uiState.value = SignUpUiState.Error("Passwords do not match")
             return
         }
@@ -28,7 +29,7 @@ class SignUpViewModel(private val context: Context) : ViewModel() {
         _uiState.value = SignUpUiState.Loading
         viewModelScope.launch {
             try {
-                val token = repository.register(RegistrationRequest(email, password))
+                val token = repository.register(RegistrationRequest(credentials.email, credentials.password))
                 _uiState.value = SignUpUiState.Success(token)
             } catch (e: Exception) {
                 _uiState.value = SignUpUiState.Error(
