@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.CardOptionsRepository
 import com.example.scareme.data.repository.ProfileRepository
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
+import com.example.scareme.presentation.user_details.utils.HttpErrorMapper.mapHttpError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ class ProfileViewModel(
                     _user.value = userList[0]
                 }
             } catch (e: HttpException) {
-                handleHttpException(e)
+                _errorMessage.value = mapHttpError(e.code())
             } catch (e: IOException) {
                 _errorMessage.value = "Something went wrong, please check your connection"
             } finally {
@@ -51,7 +52,7 @@ class ProfileViewModel(
                 cardOptionsRepository.likeProfile(userId)
                 fetchUser()
             } catch (e: HttpException) {
-                handleHttpException(e)
+                _errorMessage.value = mapHttpError(e.code())
             } catch (e: IOException) {
                 _errorMessage.value = "Something went wrong, please check your connection"
             }
@@ -64,23 +65,10 @@ class ProfileViewModel(
                 cardOptionsRepository.dislikeProfile(userId)
                 fetchUser()
             } catch (e: HttpException) {
-                handleHttpException(e)
+                _errorMessage.value = mapHttpError(e.code())
             } catch (e: IOException) {
                 _errorMessage.value = "Something went wrong, please check your connection"
             }
-        }
-    }
-
-    private fun handleHttpException(exception: HttpException) {
-        _errorMessage.value = when (exception.code()) {
-            400 -> "An error occurred, try later"
-            401, 403 -> "Please, log in again"
-            404 -> "Resource not found"
-            500 -> {
-                _errorMessage.value = "Something went wrong, please check your connection"
-                null
-            }
-            else -> "An unexpected error occurred"
         }
     }
 
