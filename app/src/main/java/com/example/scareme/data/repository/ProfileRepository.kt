@@ -41,14 +41,27 @@ class ProfileRepository(
 
     suspend fun getUserNamesAndAvatars(page: Int, size: Int): List<UserRequest> {
         val userList = getUserList()
-        val fromIndex = page * size
-        val toIndex = minOf(fromIndex + size, userList.size)
-        return if (fromIndex < userList.size) {
-            userList.subList(fromIndex, toIndex).map {
-                UserRequest(it.userId, it.name, it.aboutMyself, it.avatar, it.topics)
-            }
+        val range = calculatePageRange(page, size, userList.size)
+        return if (range != null) {
+            userList.subList(range.first, range.second).map { simplifyUser(it) }
         } else {
             emptyList()
         }
+    }
+
+    private fun calculatePageRange(page: Int, size: Int, totalSize: Int): Pair<Int, Int>? {
+        val fromIndex = page * size
+        val toIndex = minOf(fromIndex + size, totalSize)
+        return if (fromIndex < totalSize) Pair(fromIndex, toIndex) else null
+    }
+
+    private fun simplifyUser(user: UserRequest): UserRequest {
+        return UserRequest(
+            userId = user.userId,
+            name = user.name,
+            aboutMyself = user.aboutMyself,
+            avatar = user.avatar,
+            topics = user.topics
+        )
     }
 }
