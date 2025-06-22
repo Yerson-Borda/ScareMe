@@ -1,8 +1,5 @@
 package com.example.scareme.presentation.sign_in.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -10,23 +7,10 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.*
 import com.example.scareme.R
-import com.example.scareme.presentation.sign_in.ErrorField
 
 @Composable
 fun Password(
@@ -34,62 +18,29 @@ fun Password(
     error: String?,
     onPasswordChanged: (String) -> Unit,
     onImeAction: () -> Unit
-){
-    val showPassword = remember { mutableStateOf(false) }
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+) {
+    var showPassword by remember { mutableStateOf(false) }
+
+    LabeledTextField(
         value = password,
-        onValueChange = { onPasswordChanged(it) },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color(0xFF401c34),
-            unfocusedTextColor = Color.White,
-            focusedContainerColor = Color(0xFF401c34),
-            focusedTextColor = Color.White,
-            unfocusedIndicatorColor =  Color.Transparent,
-            focusedIndicatorColor =  Color.Transparent
-        ),
-        singleLine = true,
-        shape = RoundedCornerShape(16.dp),
-        visualTransformation = if (showPassword.value) {
-            VisualTransformation.None
-        }  else {
-            PasswordVisualTransformation()
-        },
+        onValueChange = onPasswordChanged,
+        labelText = stringResource(R.string.password),
+        error = error,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(onDone = { onImeAction() }),
-        label = {
-            Text(
-                text = stringResource(R.string.password),
-                style = MaterialTheme.typography.displaySmall,
-                color = Color.White
-            )
-        },
+        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            if (showPassword.value){
-                IconButton(onClick = { showPassword.value = false }) {
-                    Icon(
-                        imageVector = Icons.Filled.Visibility,
-                        tint = Color.White,
-                        contentDescription = stringResource(R.string.hide_password)
-                    )
-                }
-            } else {
-                IconButton(onClick = { showPassword.value = true }) {
-                    Icon(
-                        imageVector = Icons.Filled.VisibilityOff,
-                        tint = Color.White,
-                        contentDescription = stringResource(R.string.show_password)
-                    )
-                }
-            }
-        },
-        isError = error != null
-    )
+            val icon = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            val contentDescription = if (showPassword)
+                stringResource(R.string.hide_password)
+            else stringResource(R.string.show_password)
 
-    error?.let { ErrorField(it) }
+            IconButton(onClick = { showPassword = !showPassword }) {
+                Icon(imageVector = icon, contentDescription = contentDescription, tint = androidx.compose.ui.graphics.Color.White)
+            }
+        }
+    )
 }
