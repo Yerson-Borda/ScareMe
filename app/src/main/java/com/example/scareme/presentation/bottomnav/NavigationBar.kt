@@ -16,64 +16,43 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.scareme.R
 import com.example.scareme.navigation.AppScreens
 
+data class NavItem(
+    val route: String,
+    val iconOn: Int,
+    val iconOff: Int
+)
+
 @Composable
 fun NavigationBar(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar(
-        containerColor = Color.Transparent
-    ) {
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = if (currentRoute == AppScreens.Cards.route) R.drawable.homeon else R.drawable.homeoff),
-                    contentDescription = null,
-                    modifier = Modifier.size(if (currentRoute == AppScreens.Cards.route) 40.dp else 26.dp),
-                    tint = Color.Unspecified
+    val navItems = listOf(
+        NavItem(AppScreens.Cards.route, R.drawable.homeon, R.drawable.homeoff),
+        NavItem(AppScreens.Chat.route, R.drawable.chaton, R.drawable.chatoff),
+        NavItem(AppScreens.MyProfile.route, R.drawable.profileon, R.drawable.profileoff)
+    )
+
+    NavigationBar(containerColor = Color.Transparent) {
+        navItems.forEach { item ->
+            val selected = currentRoute == item.route
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        painter = painterResource(id = if (selected) item.iconOn else item.iconOff),
+                        contentDescription = null,
+                        modifier = Modifier.size(if (selected) 40.dp else 26.dp),
+                        tint = Color.Unspecified
+                    )
+                },
+                selected = selected,
+                onClick = { navController.navigate(item.route) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color(0xFFB14623),
+                    unselectedIconColor = Color(0xFFB14623),
+                    indicatorColor = Color.Transparent
                 )
-            },
-            selected = currentRoute == AppScreens.Cards.route,
-            onClick = { navController.navigate(AppScreens.Cards.route) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFFB14623),
-                unselectedIconColor = Color(0xFFB14623),
-                indicatorColor = Color.Transparent
             )
-        )
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = if (currentRoute == AppScreens.Chat.route) R.drawable.chaton else R.drawable.chatoff),
-                    contentDescription = null,
-                    modifier = Modifier.size(if (currentRoute == AppScreens.Chat.route) 40.dp else 26.dp),
-                    tint = Color.Unspecified
-                )
-            },
-            selected = currentRoute == AppScreens.Chat.route,
-            onClick = { navController.navigate(AppScreens.Chat.route) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFFB14623),
-                unselectedIconColor = Color(0xFFB14623),
-                indicatorColor = Color.Transparent
-            )
-        )
-        NavigationBarItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = if (currentRoute == AppScreens.MyProfile.route) R.drawable.profileon else R.drawable.profileoff),
-                    contentDescription = null,
-                    modifier = Modifier.size(if (currentRoute == AppScreens.MyProfile.route) 40.dp else 26.dp),
-                    tint = Color.Unspecified
-                )
-            },
-            selected = currentRoute == AppScreens.MyProfile.route,
-            onClick = { navController.navigate(AppScreens.MyProfile.route) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFFB14623),
-                unselectedIconColor = Color(0xFFB14623),
-                indicatorColor = Color.Transparent
-            )
-        )
+        }
     }
 }
