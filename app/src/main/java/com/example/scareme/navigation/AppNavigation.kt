@@ -1,6 +1,7 @@
 package com.example.scareme.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -8,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.scareme.domain.Entities.RequestBodies.MessengerArgs
 import com.example.scareme.presentation.chat.ChatScreen
 import com.example.scareme.presentation.fill_profile.UserInfo
 import com.example.scareme.presentation.home.HomeScreen
@@ -49,9 +51,15 @@ private fun NavGraphBuilder.addMessengerRoute(navController: NavController) {
             navArgument("title") { type = NavType.StringType }
         )
     ) { backStackEntry ->
-        val chatId = backStackEntry.arguments?.getString("chatId") ?: ""
-        val avatar = backStackEntry.arguments?.getString("avatar") ?: ""
-        val title = backStackEntry.arguments?.getString("title") ?: ""
-        MessengerScreen(navController, chatId, avatar, title)
+        val args = backStackEntry.toMessengerArgs()
+        MessengerScreen(navController, args.chatId, args.avatar, args.title)
     }
+}
+
+private fun NavBackStackEntry.toMessengerArgs(): MessengerArgs {
+    return MessengerArgs(
+        chatId = arguments?.getString("chatId") ?: "",
+        avatar = arguments?.getString("avatar") ?: "",
+        title = arguments?.getString("title") ?: ""
+    )
 }
