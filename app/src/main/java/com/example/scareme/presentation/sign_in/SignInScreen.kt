@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,28 +41,44 @@ fun SignInScreen(navController: NavController) {
     val viewModel: SignInViewModel = viewModel(factory = SignInViewModelFactory(context))
 
     val uiState by viewModel.uiState
-    val showDialog = remember { mutableStateOf(false) }
 
-    if (uiState is SignInUiState.Success) {
-        navController.navigate(AppScreens.Cards.route)
-        viewModel.resetError()
-    }
+    SignInNavigationHandler(navController, uiState, viewModel)
 
     SignInScreenContent(
         signIn = { email, password -> viewModel.login(email, password) },
         errorMessage = (uiState as? SignInUiState.Error)?.message
     )
 
-    if (uiState is SignInUiState.Error) {
-        showDialog.value = true
-    }
+    SignInErrorDialog(uiState = uiState, onDismiss = { viewModel.resetError() })
+}
 
-    if (showDialog.value) {
+@Composable
+private fun SignInNavigationHandler(
+    navController: NavController,
+    uiState: SignInUiState,
+    viewModel: SignInViewModel
+) {
+    LaunchedEffect(uiState) {
+        if (uiState is SignInUiState.Success) {
+            navController.navigate(AppScreens.Cards.route)
+            viewModel.resetError()
+        }
+    }
+}
+
+@Composable
+private fun SignInErrorDialog(
+    uiState: SignInUiState,
+    onDismiss: () -> Unit
+) {
+    val showDialog = remember(uiState) { mutableStateOf(uiState is SignInUiState.Error) }
+
+    if (showDialog.value && uiState is SignInUiState.Error) {
         ErrorDialog(
-            errorMessage = (uiState as? SignInUiState.Error)?.message ?: "",
+            errorMessage = uiState.message,
             onDismiss = {
                 showDialog.value = false
-                viewModel.resetError()
+                onDismiss()
             }
         )
     }
@@ -71,17 +88,18 @@ fun SignInScreen(navController: NavController) {
 fun SignInScreenContent(
     signIn: (email: String, password: String) -> Unit,
     errorMessage: String?
-){
-    Column (
+) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF180c14))
             .padding(horizontal = 16.dp, vertical = 40.dp),
         verticalArrangement = Arrangement.Center
-    ){
+    ) {
         val emailState = remember { EmailState() }
         val passwordState = remember { PasswordState() }
-        Column (
+
+        Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
@@ -99,9 +117,10 @@ fun SignInScreenContent(
                     emailState.validate()
                 },
                 onImeAction = {
-                    localFocusManager.moveFocus((FocusDirection.Down))
+                    localFocusManager.moveFocus(FocusDirection.Down)
                 }
             )
+
             Password(
                 passwordState.text,
                 passwordState.error,
@@ -111,13 +130,14 @@ fun SignInScreenContent(
                 },
                 onImeAction = {
                     localFocusManager.clearFocus()
-                    if (emailState.isValid() && passwordState.isValid()){
+                    if (emailState.isValid() && passwordState.isValid()) {
                         signIn(emailState.text, passwordState.text)
                     }
                 }
             )
         }
-        Column (
+
+        Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
@@ -129,11 +149,12 @@ fun SignInScreenContent(
                     signIn(emailState.text, passwordState.text)
                 }
             )
+
             errorMessage?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
         }
@@ -141,7 +162,7 @@ fun SignInScreenContent(
 }
 
 @Composable
-fun Title(){
+fun Title() {
     Text(
         text = stringResource(R.string.sign_in),
         style = MaterialTheme.typography.titleMedium
@@ -149,18 +170,18 @@ fun Title(){
 }
 
 @Composable
-fun ErrorField(error: String){
+fun ErrorField(error: String) {
     Text(
         text = error,
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 10.dp),
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelSmall
     )
 }
 
 @Composable
-fun SignInButton(enabled: Boolean, onClick: () -> Unit){
+fun SignInButton(enabled: Boolean, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
