@@ -3,6 +3,7 @@ package com.example.scareme.data.repository
 import android.content.Context
 import com.example.scareme.common.SaveTokenUtil
 import com.example.scareme.data.Network.UserData.UserDataApi
+import com.example.scareme.domain.Entities.RequestBodies.Pagination
 import com.example.scareme.domain.Entities.RequestBodies.TopicsRequest
 import com.example.scareme.domain.Entities.RequestBodies.UpdateProfRequest
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
@@ -39,9 +40,9 @@ class ProfileRepository(
         return userDataApi.getMyProfile(bearerToken())
     }
 
-    suspend fun getUserNamesAndAvatars(page: Int, size: Int): List<UserRequest> {
+    suspend fun getUserNamesAndAvatars(pagination: Pagination): List<UserRequest> {
         val userList = getUserList()
-        val range = calculatePageRange(page, size, userList.size)
+        val range = calculatePageRange(pagination, userList.size)
         return if (range != null) {
             userList.subList(range.first, range.second).map { simplifyUser(it) }
         } else {
@@ -49,9 +50,9 @@ class ProfileRepository(
         }
     }
 
-    private fun calculatePageRange(page: Int, size: Int, totalSize: Int): Pair<Int, Int>? {
-        val fromIndex = page * size
-        val toIndex = minOf(fromIndex + size, totalSize)
+    private fun calculatePageRange(pagination: Pagination, totalSize: Int): Pair<Int, Int>? {
+        val fromIndex = pagination.page * pagination.size
+        val toIndex = minOf(fromIndex + pagination.size, totalSize)
         return if (fromIndex < totalSize) Pair(fromIndex, toIndex) else null
     }
 

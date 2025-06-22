@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.AuthRepository
+import com.example.scareme.domain.Entities.RequestBodies.RegistrationRequest
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -23,7 +24,7 @@ class SignUpViewModel(private val context: Context) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val token = repository.register(email, password)
+                val token = repository.register(RegistrationRequest(email, password))
                 signUpResult.value = token
                 errorMessage.value = null
             } catch (e: Exception) {

@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.scareme.common.SaveTokenUtil
 import com.example.scareme.data.Network.ChatManager.ChatApi
 import com.example.scareme.domain.Entities.RequestBodies.GetChatRequest
+import com.example.scareme.domain.Entities.RequestBodies.MessagePagination
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
 import okhttp3.RequestBody
 import retrofit2.Retrofit
@@ -27,8 +28,8 @@ class ChatRepository(
         chatApi.createChat(bearerToken(), requestBody)
     }
 
-    suspend fun getMessagesList(chatId: String, limit: Int, offset: Int): List<MessageResponse> {
-        return chatApi.getMessagesList(bearerToken(), chatId, limit, offset)
+    suspend fun getMessagesList(params: MessagePagination): List<MessageResponse> {
+        return chatApi.getMessagesList(bearerToken(), params.chatId, params.limit, params.offset)
     }
 
     suspend fun sendMessage(chatId: String, messageText: RequestBody): MessageResponse {

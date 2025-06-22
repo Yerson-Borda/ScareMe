@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.ChatRepository
+import com.example.scareme.domain.Entities.RequestBodies.MessagePagination
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ class MessengerViewModel(private val repository: ChatRepository) : ViewModel() {
     fun fetchMessages(chatId: String, limit: Int = 20, offset: Int = 0) {
         viewModelScope.launch {
             try {
-                _messagesList.value = repository.getMessagesList(chatId, limit, offset)
+                _messagesList.value = repository.getMessagesList(MessagePagination(chatId, limit, offset))
             } catch (e: HttpException) {
                 handleHttpException(e)
             } catch (e: Exception) {

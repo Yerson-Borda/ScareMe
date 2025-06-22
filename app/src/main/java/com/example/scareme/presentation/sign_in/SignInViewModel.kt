@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.AuthRepository
+import com.example.scareme.domain.Entities.RequestBodies.LoginRequest
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -17,7 +18,7 @@ class SignInViewModel(context: Context) : ViewModel() {
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
-                val token = repository.login(email, password)
+                val token = repository.login(LoginRequest(email, password))
                 signInResult.value = token
                 errorMessage.value = null
             } catch (e: HttpException) {

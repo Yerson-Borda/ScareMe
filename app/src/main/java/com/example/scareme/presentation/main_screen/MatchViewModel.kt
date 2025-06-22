@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.scareme.data.repository.CardOptionsRepository
 import com.example.scareme.data.repository.ChatRepository
 import com.example.scareme.data.repository.ProfileRepository
+import com.example.scareme.domain.Entities.RequestBodies.Pagination
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,7 @@ class MatchViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userList = profileRepository.getUserNamesAndAvatars(currentPage, pageSize)
+                val userList = profileRepository.getUserNamesAndAvatars(Pagination(currentPage, pageSize))
                 if (userList.isNotEmpty()) {
                     _profiles.value = _profiles.value + userList
                     currentPage++

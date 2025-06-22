@@ -1,5 +1,6 @@
 package com.example.scareme.data.repository
 
+import android.R.attr.password
 import android.content.Context
 import com.example.scareme.common.SaveTokenUtil
 import com.example.scareme.data.Network.Auth.AuthApi
@@ -13,15 +14,15 @@ class AuthRepository(
 ) {
     private val authApi: AuthApi = retrofit.create(AuthApi::class.java)
 
-    suspend fun register(email: String, password: String): String {
-        val registration = authApi.register(RegistrationRequest(email, password))
+    suspend fun register(request: RegistrationRequest): String {
+        val registration = authApi.register(RegistrationRequest(request.email, request.password))
         val token = registration.accessToken
         SaveTokenUtil.saveToken(context, token)
         return token
     }
 
-    suspend fun login(email: String, password: String): String {
-        val login = authApi.login(LoginRequest(email, password))
+    suspend fun login(request: LoginRequest): String {
+        val login = authApi.login(LoginRequest(request.email, request.password))
         val token = login.accessToken
         SaveTokenUtil.saveToken(context, token)
         return token
