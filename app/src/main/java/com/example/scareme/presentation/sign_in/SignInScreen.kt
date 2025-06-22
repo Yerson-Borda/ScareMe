@@ -39,11 +39,11 @@ fun SignInScreen(navController: NavController) {
     val context = LocalContext.current.applicationContext
     val viewModel: SignInViewModel = viewModel(factory = SignInViewModelFactory(context))
 
-    val loginResult by remember { viewModel.signInResult }
-    val errorMessage by remember { viewModel.errorMessage }
+    val signInResult = viewModel.signInResult.value
+    val errorMessage = viewModel.errorMessage.value
     val showDialog = remember { mutableStateOf(false) }
 
-    if (loginResult != null) {
+    if (signInResult != null) {
         navController.navigate(AppScreens.Cards.route)
     }
 
