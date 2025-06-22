@@ -2,7 +2,7 @@ package com.example.scareme.domain.Entities.RequestBodies
 
 data class GetChatRequest(
     val chat: Chat,
-    val lastMessage: LastMessage
+    val lastMessage: MessageData
 )
 
 data class Chat(
@@ -11,27 +11,22 @@ data class Chat(
     val avatar: String?
 )
 
-data class LastMessage(
+data class MessageData(
     val id: String,
     val text: String,
     val createdAt: String,
     val attachments: List<String>,
     val user: User
 )
+
+typealias LastMessage = MessageData
+typealias MessageResponse = MessageData
 
 data class User(
     val userId: String,
     val name: String,
     val aboutMyself: String,
     val avatar: String?
-)
-
-data class MessageResponse(
-    val id: String,
-    val text: String,
-    val createdAt: String,
-    val attachments: List<String>,
-    val user: User
 )
 
 data class SendMessageRequest(
