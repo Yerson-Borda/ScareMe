@@ -1,6 +1,5 @@
 package com.example.scareme.presentation.fill_profile
 
-import UserInfoViewModel
 import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

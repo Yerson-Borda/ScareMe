@@ -4,7 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.CardOptionsRepository
+import com.example.scareme.data.repository.ProfileRepository
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
+class ProfileViewModel(
+    private val repository: ProfileRepository,
+    private val cardOptionsRepository: CardOptionsRepository
+) : ViewModel() {
 
     private val _user = MutableStateFlow<UserRequest?>(null)
     val user: StateFlow<UserRequest?> = _user
@@ -44,7 +48,7 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
     fun likeProfile(userId: String) {
         viewModelScope.launch {
             try {
-                repository.likeProfile(userId)
+                cardOptionsRepository.likeProfile(userId)
                 fetchUser()
             } catch (e: HttpException) {
                 handleHttpException(e)
@@ -57,7 +61,7 @@ class ProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
     fun dislikeProfile(userId: String) {
         viewModelScope.launch {
             try {
-                repository.dislikeProfile(userId)
+                cardOptionsRepository.dislikeProfile(userId)
                 fetchUser()
             } catch (e: HttpException) {
                 handleHttpException(e)
@@ -89,7 +93,10 @@ class ProfileViewModelFactory(private val context: Context) : ViewModelProvider.
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-            return ProfileViewModel(iTindrRepository(context)) as T
+            return ProfileViewModel(
+                repository = ProfileRepository(context),
+                cardOptionsRepository = CardOptionsRepository(context)
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

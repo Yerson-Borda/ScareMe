@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.CardOptionsRepository
+import com.example.scareme.data.repository.ChatRepository
+import com.example.scareme.data.repository.ProfileRepository
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +14,11 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
+class MatchViewModel(
+    private val cardOptionsRepository: CardOptionsRepository,
+    private val profileRepository: ProfileRepository,
+    private val chatRepository: ChatRepository
+) : ViewModel() {
 
     private val _profiles = MutableStateFlow<List<UserRequest>>(emptyList())
     val profiles: StateFlow<List<UserRequest>> = _profiles
@@ -34,7 +40,7 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val userList = repository.getUserNamesAndAvatars(currentPage, pageSize)
+                val userList = profileRepository.getUserNamesAndAvatars(currentPage, pageSize)
                 if (userList.isNotEmpty()) {
                     _profiles.value = _profiles.value + userList
                     currentPage++
@@ -52,8 +58,8 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
     fun likeProfile(userId: String) {
         viewModelScope.launch {
             try {
-                repository.likeProfile(userId)
-                repository.createChat(userId)
+                cardOptionsRepository.likeProfile(userId)
+                chatRepository.createChat(mapOf("userId" to userId))
                 removeProfile(userId)
                 fetchProfilesIfNeeded()
             } catch (e: HttpException) {
@@ -67,7 +73,7 @@ class MatchViewModel(private val repository: iTindrRepository) : ViewModel() {
     fun dislikeProfile(userId: String) {
         viewModelScope.launch {
             try {
-                repository.dislikeProfile(userId)
+                cardOptionsRepository.dislikeProfile(userId)
                 removeProfile(userId)
                 fetchProfilesIfNeeded()
             } catch (e: HttpException) {
@@ -110,7 +116,11 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MatchViewModel::class.java)) {
-            return MatchViewModel(iTindrRepository(context)) as T
+            return MatchViewModel(
+                cardOptionsRepository = CardOptionsRepository(context),
+                profileRepository = ProfileRepository(context),
+                chatRepository = ChatRepository(context)
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -30,7 +30,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scareme.R
 import com.example.scareme.common.ErrorDialog
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.ChatRepository
 import com.example.scareme.presentation.bottomnav.NavigationBar
 import com.example.scareme.presentation.ui.theme.balooFontFamily
 import com.example.scareme.domain.Entities.RequestBodies.GetChatRequest
@@ -40,7 +40,7 @@ import java.net.URLEncoder
 @Composable
 fun ChatScreen(navController: NavController) {
     val context = LocalContext.current.applicationContext
-    val repository = iTindrRepository(context)
+    val repository = ChatRepository(context)
     val chatViewModel: ChatViewModel = viewModel(factory = ChatViewModelFactory(repository))
 
     val chatList by chatViewModel.chatList.collectAsState()

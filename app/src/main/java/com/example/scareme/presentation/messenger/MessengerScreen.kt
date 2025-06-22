@@ -49,7 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scareme.common.ErrorDialog
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.ChatRepository
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
 import com.example.scareme.navigation.AppScreens
 import kotlinx.coroutines.delay
@@ -62,7 +62,7 @@ fun MessengerScreen(
     title: String
 ) {
     val context = LocalContext.current.applicationContext
-    val repository = iTindrRepository(context)
+    val repository = ChatRepository(context)
     val messengerViewModel: MessengerViewModel = viewModel(factory = MessengerViewModelFactory(repository))
 
     LaunchedEffect(Unit) {

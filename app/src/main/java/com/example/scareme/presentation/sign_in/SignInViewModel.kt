@@ -5,12 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
 class SignInViewModel(context: Context) : ViewModel() {
-    private val repository: iTindrRepository = iTindrRepository(context)
+    private val repository: AuthRepository = AuthRepository(context)
     val signInResult = mutableStateOf<String?>(null)
     val errorMessage = mutableStateOf<String?>(null)
 

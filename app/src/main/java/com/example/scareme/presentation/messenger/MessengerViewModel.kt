@@ -3,14 +3,16 @@ package com.example.scareme.presentation.messenger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.ChatRepository
 import com.example.scareme.domain.Entities.RequestBodies.MessageResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import retrofit2.HttpException
+import okhttp3.RequestBody.Companion.toRequestBody
 
-class MessengerViewModel(private val repository: iTindrRepository) : ViewModel() {
+class MessengerViewModel(private val repository: ChatRepository) : ViewModel() {
     private val _messagesList = MutableStateFlow<List<MessageResponse>>(emptyList())
     val messagesList: StateFlow<List<MessageResponse>> = _messagesList
 
@@ -32,7 +34,8 @@ class MessengerViewModel(private val repository: iTindrRepository) : ViewModel()
     fun sendMessage(chatId: String, messageText: String) {
         viewModelScope.launch {
             try {
-                repository.sendMessage(chatId, messageText)
+                val messageBody = messageText.toRequestBody("text/plain".toMediaTypeOrNull())
+                repository.sendMessage(chatId, messageBody)
                 fetchMessages(chatId)
             } catch (e: HttpException) {
                 handleHttpException(e)
@@ -57,7 +60,7 @@ class MessengerViewModel(private val repository: iTindrRepository) : ViewModel()
     }
 }
 
-class MessengerViewModelFactory(private val repository: iTindrRepository) : ViewModelProvider.Factory {
+class MessengerViewModelFactory(private val repository: ChatRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MessengerViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

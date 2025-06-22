@@ -5,7 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.scareme.data.repository.iTindrRepository
+import com.example.scareme.data.repository.AuthRepository
+import com.example.scareme.data.repository.ProfileRepository
 import com.example.scareme.domain.Entities.RequestBodies.UserRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class MyProfileViewModel(private val repository: iTindrRepository) : ViewModel() {
+class MyProfileViewModel(
+    private val repository: ProfileRepository,
+    private val authRepository: AuthRepository
+) : ViewModel() {
     private val _user = MutableStateFlow<UserRequest?>(null)
     val user: StateFlow<UserRequest?> = _user
 
@@ -38,7 +42,7 @@ class MyProfileViewModel(private val repository: iTindrRepository) : ViewModel()
 
     fun logout() {
         viewModelScope.launch {
-            repository.logout()
+            authRepository.logout()
         }
     }
 
@@ -57,7 +61,10 @@ class MyProfileViewModelFactory(private val context: Context) : ViewModelProvide
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MyProfileViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MyProfileViewModel(iTindrRepository(context)) as T
+            return MyProfileViewModel(
+                repository = ProfileRepository(context),
+                authRepository = AuthRepository(context)
+            ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
