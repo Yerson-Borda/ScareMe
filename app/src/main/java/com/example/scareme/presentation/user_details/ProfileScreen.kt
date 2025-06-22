@@ -4,13 +4,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,15 +28,13 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scareme.R
 import com.example.scareme.common.ErrorDialog
-import com.example.scareme.presentation.bottomnav.NavigationBar
-import com.example.scareme.presentation.ui.theme.balooFontFamily
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import com.example.scareme.domain.Entities.RequestBodies.TopicsRequest
 import com.example.scareme.navigation.AppScreens
+import com.example.scareme.presentation.bottomnav.NavigationBar
 import com.example.scareme.presentation.main_screen.MatchViewModel
 import com.example.scareme.presentation.main_screen.ViewModelFactory
+import com.example.scareme.presentation.ui.theme.balooFontFamily
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(navController: NavController) {
@@ -52,12 +49,12 @@ fun ProfileScreen(navController: NavController) {
         viewModel.fetchUser()
     }
 
-    if (errorMessage != null) {
+    errorMessage?.let {
         ErrorDialog(
-            errorMessage = errorMessage!!,
+            errorMessage = it,
             onDismiss = {
                 viewModel.clearErrorMessage()
-                if (errorMessage == "Something went wrong, please check your connection") {
+                if (it == "Something went wrong, please check your connection") {
                     navController.navigate(AppScreens.HomeScreen.route)
                 }
             }
@@ -67,10 +64,7 @@ fun ProfileScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .paint(
-                painterResource(id = R.drawable.back),
-                contentScale = ContentScale.FillBounds
-            )
+            .paint(painterResource(id = R.drawable.back), contentScale = ContentScale.FillBounds)
             .padding(vertical = 20.dp, horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -78,129 +72,117 @@ fun ProfileScreen(navController: NavController) {
             CircularProgressIndicator()
         } else {
             user?.let {
-                Column(
-                    modifier = Modifier
-                        .padding(top = 75.dp, bottom = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val painter = if (it.avatar != null) {
-                        rememberAsyncImagePainter(it.avatar)
-                    } else {
-                        painterResource(id = R.drawable.def)
-                    }
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(168.dp)
-                            .clip(CircleShape)
-                    )
-
-                    Text(
-                        text = it.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 10.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn(
-                    modifier = Modifier.height(100.dp)
-                ) {
-                    items(it.topics?.chunked(3) ?: emptyList()) { rowTopics ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            rowTopics.forEach { topic ->
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .background(Color(0xFFF6921D), shape = RoundedCornerShape(16.dp))
-                                        .padding(horizontal = 4.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = topic.title,
-                                        color = Color(0xFF180c14),
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = balooFontFamily,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .padding(horizontal = 10.dp, vertical = 1.dp)
-                                    )
-                                }
-                            }
+                ProfileHeader(name = it.name, avatarUrl = it.avatar)
+                ProfileTopics(topics = it.topics ?: emptyList())
+                ProfileAbout(text = it.aboutMyself.orEmpty())
+                ProfileActions(
+                    onLike = {
+                        scope.launch {
+                            matchViewModel.likeProfile(it.userId.orEmpty())
+                            viewModel.likeProfile(it.userId.orEmpty())
+                            navController.navigate(AppScreens.Cards.route)
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
+                    },
+                    onDislike = {
+                        scope.launch {
+                            matchViewModel.dislikeProfile(it.userId.orEmpty())
+                            viewModel.dislikeProfile(it.userId.orEmpty())
+                            navController.navigate(AppScreens.Cards.route)
+                        }
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = it.aboutMyself ?: "",
-                    color = Color.White,
-                    fontFamily = balooFontFamily,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 35.sp
                 )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 31.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    CircleButton(
-                        onClick = {
-                            scope.launch {
-                                matchViewModel.dislikeProfile(it.userId ?: "")
-                                viewModel.dislikeProfile(it.userId ?: "")
-                                navController.navigate(AppScreens.Cards.route)
-                            }
-                        },
-                        icon = painterResource(id = R.drawable.pass)
-                    )
-
-                    CircleButton(
-                        onClick = {
-                            scope.launch {
-                                matchViewModel.likeProfile(it.userId ?: "")
-                                viewModel.likeProfile(it.userId ?: "")
-                                navController.navigate(AppScreens.Cards.route)
-                            }
-                        },
-                        icon = painterResource(id = R.drawable.like)
-                    )
-                }
-
-                Column(
-                    Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Bottom
-                ) {
-                    NavigationBar(navController)
-                }
+                Spacer(modifier = Modifier.height(16.dp))
+                NavigationBar(navController)
             }
         }
     }
 }
 
 @Composable
-fun CircleButton(
-    onClick: () -> Unit,
-    icon: Painter,
-) {
+fun ProfileHeader(name: String, avatarUrl: String?) {
+    val painter = avatarUrl?.let { rememberAsyncImagePainter(it) } ?: painterResource(id = R.drawable.def)
+    Column(
+        modifier = Modifier.padding(top = 75.dp, bottom = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(168.dp)
+                .clip(CircleShape)
+        )
+        Text(text = name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 10.dp))
+    }
+}
+
+@Composable
+fun ProfileTopics(topics: List<TopicsRequest>) {
+    LazyColumn(modifier = Modifier.height(100.dp)) {
+        items(topics.chunked(3)) { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                row.forEach { topic ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFFF6921D), shape = RoundedCornerShape(16.dp))
+                            .padding(horizontal = 4.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = topic.title,
+                            color = Color(0xFF180c14),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = balooFontFamily,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(horizontal = 10.dp, vertical = 1.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun ProfileAbout(text: String) {
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(
+        text = text,
+        color = Color.White,
+        fontFamily = balooFontFamily,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        lineHeight = 35.sp
+    )
+}
+
+@Composable
+fun ProfileActions(onLike: () -> Unit, onDislike: () -> Unit) {
+    Spacer(modifier = Modifier.height(20.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 31.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        CircleButton(onClick = onDislike, icon = painterResource(id = R.drawable.pass))
+        CircleButton(onClick = onLike, icon = painterResource(id = R.drawable.like))
+    }
+}
+
+@Composable
+fun CircleButton(onClick: () -> Unit, icon: Painter) {
     IconButton(
         modifier = Modifier
             .clip(CircleShape)
@@ -209,9 +191,6 @@ fun CircleButton(
             .border(2.dp, Color.Black, CircleShape),
         onClick = onClick
     ) {
-        Icon(icon, null,
-            tint = Color(0xFFe84c3c),
-            modifier = Modifier.size(24.dp)
-        )
+        Icon(icon, null, tint = Color(0xFFe84c3c), modifier = Modifier.size(24.dp))
     }
 }
