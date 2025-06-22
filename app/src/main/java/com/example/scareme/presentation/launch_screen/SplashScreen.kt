@@ -19,22 +19,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.scareme.R
 import com.example.scareme.navigation.AppScreens
-import com.example.scareme.presentation.ui.theme.jollyFontFamily
+import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavController, splashViewModel: SplashViewModel = viewModel()) {
+fun SplashScreen(navController: NavController) {
     LaunchedEffect(Unit) {
-        splashViewModel.startSplashScreenTimer {
-            navController.popBackStack()
-            navController.navigate(AppScreens.HomeScreen.route)
-        }
+        delay(2500)
+        navController.popBackStack()
+        navController.navigate(AppScreens.HomeScreen.route)
     }
 
     Splash()
