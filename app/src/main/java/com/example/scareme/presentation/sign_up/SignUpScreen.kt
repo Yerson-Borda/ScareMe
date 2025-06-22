@@ -40,31 +40,31 @@ fun SignUpScreen(navController: NavController) {
     val context = LocalContext.current.applicationContext
     val viewModel: SignUpViewModel = viewModel(factory = SignUpViewModelFactory(context))
 
-    val registerResult by remember { viewModel.signUpResult }
-    val errorMessage by remember { viewModel.errorMessage }
+    val uiState by viewModel.uiState
     val showDialog = remember { mutableStateOf(false) }
     val repeatPassword by remember { viewModel.repeatPassword }
 
-    if (registerResult != null) {
+    if (uiState is SignUpUiState.Success) {
         navController.navigate(AppScreens.Registration.route)
+        viewModel.resetResult()
     }
 
     SignUpScreenContent(
         register = { email, password, repeatPassword ->
             viewModel.register(email, password, repeatPassword)
         },
-        errorMessage = errorMessage,
+        errorMessage = (uiState as? SignUpUiState.Error)?.message,
         repeatPassword = repeatPassword,
         onRepeatPasswordChanged = { viewModel.repeatPassword.value = it }
     )
 
-    if (errorMessage != null) {
+    if (uiState is SignUpUiState.Error) {
         showDialog.value = true
     }
 
     if (showDialog.value) {
         ErrorDialog(
-            errorMessage = errorMessage ?: "",
+            errorMessage = (uiState as? SignUpUiState.Error)?.message ?: "",
             onDismiss = {
                 showDialog.value = false
                 viewModel.resetErrorMessage()

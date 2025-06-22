@@ -9,42 +9,61 @@ import com.example.scareme.data.repository.AuthRepository
 import com.example.scareme.domain.Entities.RequestBodies.RegistrationRequest
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import androidx.compose.runtime.State
 
 class SignUpViewModel(private val context: Context) : ViewModel() {
     private val repository: AuthRepository = AuthRepository(context)
-    val signUpResult = mutableStateOf<String?>(null)
-    val errorMessage = mutableStateOf<String?>(null)
+
+    private val _uiState = mutableStateOf<SignUpUiState>(SignUpUiState.Idle)
+    val uiState: State<SignUpUiState> = _uiState
+
     val repeatPassword = mutableStateOf("")
 
     fun register(email: String, password: String, repeatPassword: String) {
         if (password != repeatPassword) {
-            errorMessage.value = "Passwords do not match"
+            _uiState.value = SignUpUiState.Error("Passwords do not match")
             return
         }
 
+        _uiState.value = SignUpUiState.Loading
         viewModelScope.launch {
             try {
                 val token = repository.register(RegistrationRequest(email, password))
-                signUpResult.value = token
-                errorMessage.value = null
+                _uiState.value = SignUpUiState.Success(token)
             } catch (e: Exception) {
-                signUpResult.value = null
-                errorMessage.value = when (e) {
-                    is HttpException -> when (e.code()) {
-                        400 -> "An error occurred, try later"
-                        409 -> "The user already exists"
-                        500 -> "Something went wrong, check your internet"
-                        else -> "Unexpected error occurred"
+                _uiState.value = SignUpUiState.Error(
+                    when (e) {
+                        is HttpException -> when (e.code()) {
+                            400 -> "An error occurred, try later"
+                            409 -> "The user already exists"
+                            500 -> "Something went wrong, check your internet"
+                            else -> "Unexpected error occurred"
+                        }
+                        else -> "Something went wrong, check your connection"
                     }
-                    else -> "Something went wrong, check your connection"
-                }
+                )
             }
         }
     }
 
     fun resetErrorMessage() {
-        errorMessage.value = null
+        if (_uiState.value is SignUpUiState.Error) {
+            _uiState.value = SignUpUiState.Idle
+        }
     }
+
+    fun resetResult() {
+        if (_uiState.value is SignUpUiState.Success) {
+            _uiState.value = SignUpUiState.Idle
+        }
+    }
+}
+
+sealed class SignUpUiState {
+    object Idle : SignUpUiState()
+    object Loading : SignUpUiState()
+    data class Success(val token: String) : SignUpUiState()
+    data class Error(val message: String) : SignUpUiState()
 }
 
 class SignUpViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
