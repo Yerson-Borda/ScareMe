@@ -45,6 +45,7 @@ fun SignInScreen(navController: NavController) {
 
     if (signInResult != null) {
         navController.navigate(AppScreens.Cards.route)
+        viewModel.signInResult.value = null
     }
 
     SignInScreenContent(
